@@ -29,75 +29,6 @@
 * 在Eclipse编辑器中  使用 “alt + /”  快捷键可以打开智能提示
 */
 
-#ifdef SUPPORT_WLAN_MODULE
-#include "mi_common_datatype.h"
-#include "mi_wlan.h"
-#include "wifiInfo.h"
-
-
-
-static bool isWifiSupport = true;
-static bool isWifiEnable = true;
-static WLAN_HANDLE wlanHdl = -1;
-static MI_WLAN_OpenParams_t stOpenParam = {E_MI_WLAN_NETWORKTYPE_INFRA};
-static MI_WLAN_InitParams_t stParm = {"/config/wifi/wlan.json"};
-static MI_WLAN_Status_t  status;
-static bool isBootupConnect = false;
-
-class WifiSetupThread : public Thread {
-public:
-	void setCycleCnt(int cnt, int sleepMs) { nCycleCnt = cnt; nSleepMs = sleepMs; }
-
-protected:
-	virtual bool threadLoop() {
-		if (!isBootupConnect)
-		{
-			MI_WLAN_ConnectParam_t *pConnParam = getConnectParam();
-			MI_WLAN_Init(&stParm);
-			MI_WLAN_Open(&stOpenParam);
-
-			if (isWifiEnable && wlanHdl != -1)
-			{
-				printf("conn param: id=%d, ssid=%s, passwd=%s\n", wlanHdl, (char*)pConnParam->au8SSId, (char*)pConnParam->au8Password);
-				MI_WLAN_Connect(&wlanHdl, pConnParam); // save after connect
-				printf("save conn param: id=%d, ssid=%s, passwd=%s\n", wlanHdl);
-			}
-
-			isBootupConnect = true;
-		}
-
-		if (isWifiEnable && wlanHdl != -1)
-		{
-			if (nCycleCnt-- > 0)
-			{
-				MI_WLAN_GetStatus(&status);
-
-				if(status.stStaStatus.state == WPA_COMPLETED)
-				{
-					setConnectionStatus(true);
-					printf("%s %s\n", status.stStaStatus.ip_address, status.stStaStatus.ssid);
-					return false;
-				}
-
-				if (!nCycleCnt)
-					printf("wifi inconnected\n");
-
-				sleep(nSleepMs);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-private:
-	int nCycleCnt;
-	int nSleepMs;
-};
-
-static WifiSetupThread wifiSetupThread;
-#endif
-
 static int g_curPageIdx = 0;
 /**
  * 注册定时器
@@ -111,21 +42,6 @@ static S_ACTIVITY_TIMEER REGISTER_ACTIVITY_TIMER_TAB[] = {
 static void onUI_init(){
     //Tips :添加 UI初始化的显示代码到这里,如:mText1->setText("123");
 	EASYUICONTEXT->hideStatusBar();
-
-#ifdef SUPPORT_WLAN_MODULE
-	// get wifi status from config file
-	initWifiConfig();
-	isWifiSupport = getWifiSupportStatus();
-	isWifiEnable = getWifiEnableStatus();
-	wlanHdl = getWlanHandle();
-
-	if (isWifiSupport)
-	{
-		wifiSetupThread.setCycleCnt(20, 500);
-		printf("wifiSetupThread run\n");
-		wifiSetupThread.run("wifiSetup");
-	}
-#endif
 }
 
 /**
@@ -152,17 +68,7 @@ static void onUI_hide() {
 
 }
 static void onUI_quit() {
-#ifdef SUPPORT_WLAN_MODULE
-		wifiSetupThread.requestExitAndWait();
-		if (wlanHdl != -1)
-		{
-			MI_WLAN_Disconnect(wlanHdl);
-		}
 
-		MI_WLAN_Close();
-		sleep(3);
-		MI_WLAN_DeInit();
-#endif
 }
 
 
@@ -213,25 +119,16 @@ const char* IconTab[]={
 		"sliderwindowActivity",
 		"uartActivity",
 		"painterActivity",
-		"networkSettingActivity",
 };
 
 static void onSlideItemClick_Slidewindow1(ZKSlideWindow *pSlideWindow, int index) {
-#ifndef SUPPORT_WLAN_MODULE
-	if (!strcmp(IconTab[index], "networkSettingActivity"))
-	{
-		printf("wifi module is not loaded\n");
-		return;
-	}
-#endif
-
 	EASYUICONTEXT->openActivity(IconTab[index]);
 }
 
 static void onSlidePageChange_Slidewindow1(ZKSlideWindow *pSlideWindow, int page) {
 	int totalPage = pSlideWindow->getPageSize();
 	g_curPageIdx = pSlideWindow->getCurrentPage();
-	printf("Logic: param page is %d, total page is %d, cur page is %d\n", page, totalPage, g_curPageIdx);
+	//printf("Logic: param page is %d, total page is %d, cur page is %d\n", page, totalPage, g_curPageIdx);
 	mListview_indicatorPtr->refreshListView();
 }
 
@@ -251,7 +148,7 @@ static void obtainListItemData_Listview_indicator(ZKListView *pListView,ZKListVi
 static void onListItemClick_Listview_indicator(ZKListView *pListView, int index, int id) {
     //LOGD(" onListItemClick_ Listview_indicator  !!!\n");
 	int curPageIdx =  g_curPageIdx;
-	printf("click idx is %d, curPageIdx is %d\n", index, g_curPageIdx);
+	//printf("click idx is %d, curPageIdx is %d\n", index, g_curPageIdx);
 
 	while (curPageIdx < index)
 	{
