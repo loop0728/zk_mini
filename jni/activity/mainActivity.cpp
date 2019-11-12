@@ -4,6 +4,7 @@
 #include "mainActivity.h"
 
 /*TAG:GlobalVariable全局变量*/
+static ZKListView* mListview_indicatorPtr;
 static ZKDigitalClock* mDigitalclock2Ptr;
 static ZKWindow* mWindow2Ptr;
 static ZKSlideWindow* mSlidewindow1Ptr;
@@ -69,6 +70,7 @@ typedef struct {
 }S_ListViewFunctionsCallback;
 /*TAG:ListViewFunctionsCallback*/
 static S_ListViewFunctionsCallback SListViewFunctionsCallbackTab[] = {
+    ID_MAIN_Listview_indicator, getListItemCount_Listview_indicator, obtainListItemData_Listview_indicator, onListItemClick_Listview_indicator,
 };
 
 
@@ -80,6 +82,16 @@ typedef struct {
 /*TAG:SlideWindowFunctionsCallbackTab*/
 static S_SlideWindowItemClickCallback SSlideWindowItemClickCallbackTab[] = {
     ID_MAIN_Slidewindow1, onSlideItemClick_Slidewindow1,
+};
+
+typedef void (*SlideWindowPageChangeCallback)(ZKSlideWindow *pSlideWindow, int page);
+typedef struct {
+    int id;
+    SlideWindowPageChangeCallback onSlidePageChangeCallback;
+}S_SlideWindowPageChangeCallback;
+/*TAG:SlideWindowFunctionsCallbackTab*/
+static S_SlideWindowPageChangeCallback SSlideWindowPageChangeCallbackTab[] = {
+    ID_MAIN_Slidewindow1, onSlidePageChange_Slidewindow1,
 };
 
 
@@ -128,9 +140,11 @@ const char* mainActivity::getAppName() const{
 //TAG:onCreate
 void mainActivity::onCreate() {
 	Activity::onCreate();
+    mSlidewindow1Ptr = (ZKSlideWindow*)findControlByID(ID_MAIN_Slidewindow1);if(mSlidewindow1Ptr!= NULL){mSlidewindow1Ptr->setSlideItemClickListener(this);}
+    mListview_indicatorPtr = (ZKListView*)findControlByID(ID_MAIN_Listview_indicator);if(mListview_indicatorPtr!= NULL){mListview_indicatorPtr->setListAdapter(this);mListview_indicatorPtr->setItemClickListener(this);}
     mDigitalclock2Ptr = (ZKDigitalClock*)findControlByID(ID_MAIN_Digitalclock2);
     mWindow2Ptr = (ZKWindow*)findControlByID(ID_MAIN_Window2);
-    mSlidewindow1Ptr = (ZKSlideWindow*)findControlByID(ID_MAIN_Slidewindow1);if(mSlidewindow1Ptr!= NULL){mSlidewindow1Ptr->setSlideItemClickListener(this);}
+    mSlidewindow1Ptr = (ZKSlideWindow*)findControlByID(ID_MAIN_Slidewindow1);if(mSlidewindow1Ptr!= NULL){mSlidewindow1Ptr->setSlideItemClickListener(this);mSlidewindow1Ptr->setSlidePageChangeListener(this);}
 	mActivityPtr = this;
 	onUI_init();
     registerProtocolDataUpdateListener(onProtocolDataUpdate); 
@@ -233,9 +247,9 @@ void mainActivity::onSlideItemClick(ZKSlideWindow *pSlideWindow, int index) {
 	vector<ZKBase*> ctrlList;
 	pSlideWindow->getAllControls(ctrlList);
 
-	printf("ctrlList size: %d\n", ctrlList.size());
+//	printf("ctrlList size: %d\n", ctrlList.size());
 
-	printf("index 0 ptr is %p\n", pSlideWindow->findControlByID(0));
+//	printf("index 0 ptr is %p\n", pSlideWindow->findControlByID(0));
 	//printf("ctrlList[%d] id is %d\n", index, ctrlList[index]->getID());
 
 	//ctrlList[index]->setBackgroundPic("main_/sp.png");
@@ -247,6 +261,16 @@ void mainActivity::onSlideItemClick(ZKSlideWindow *pSlideWindow, int index) {
             break;
         }
     }
+}
+
+void mainActivity::onSlidePageChange(ZKSlideWindow *pSlideWindow, int page) {
+	int tablen = sizeof(SSlideWindowPageChangeCallbackTab) / sizeof(S_SlideWindowPageChangeCallback);
+	for (int i = 0; i < tablen; ++i) {
+		if (SSlideWindowPageChangeCallbackTab[i].id == pSlideWindow->getID()) {
+			SSlideWindowPageChangeCallbackTab[i].onSlidePageChangeCallback(pSlideWindow, page);
+			break;
+		}
+	}
 }
 
 bool mainActivity::onTouchEvent(const MotionEvent &ev) {

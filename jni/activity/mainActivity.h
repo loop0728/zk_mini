@@ -26,6 +26,7 @@
 #include "window/ZKSlideWindow.h"
 
 /*TAG:Macro宏ID*/
+#define ID_MAIN_Listview_indicator    80001
 #define ID_MAIN_Digitalclock2    93002
 #define ID_MAIN_Window2    110002
 #define ID_MAIN_Slidewindow1    30001
@@ -36,6 +37,7 @@ class mainActivity : public Activity,
                      public ZKListView::IItemClickListener,
                      public ZKListView::AbsListAdapter,
                      public ZKSlideWindow::ISlideItemClickListener,
+					 public ZKSlideWindow::ISlidePageChangeListener,
                      public EasyUIContext::ITouchListener,
                      public ZKEditText::ITextChangeListener,
                      public ZKVideoView::IVideoPlayerMessageListener
@@ -74,7 +76,7 @@ protected:
     virtual void onItemClick(ZKListView *pListView, int index, int subItemIndex);
 
     virtual void onSlideItemClick(ZKSlideWindow *pSlideWindow, int index);
-
+    virtual void onSlidePageChange(ZKSlideWindow *pSlideWindow, int page);
     virtual bool onTouchEvent(const MotionEvent &ev);
 
     virtual void onTextChanged(ZKTextView *pTextView, const string &text);
