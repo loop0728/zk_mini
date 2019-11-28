@@ -1,34 +1,27 @@
 /***********************************************
 /gen auto by zuitools
 ***********************************************/
-#include "testSliderActivity.h"
+#include "networkSetting3Activity.h"
 
 /*TAG:GlobalVariable全局变量*/
+static ZKButton* mButton_show_passwdPtr;
+static ZKButton* mButton_connect_connPtr;
+static ZKTextView* mTextview_connect_password_titlePtr;
+static ZKEditText* mEdittextAllInfoPtr;
+static ZKTextView* mTextview_connect_ssid_titlePtr;
+static ZKTextView* mTextview_connect_ssidPtr;
 static ZKButton* msys_backPtr;
-static ZKButton* mButton1Ptr;
-static ZKTextView* mTextview8Ptr;
-static ZKTextView* mTextview7Ptr;
-static ZKTextView* mTextview6Ptr;
-static ZKTextView* mTextview5Ptr;
-static ZKTextView* mTextview4Ptr;
-static ZKTextView* mTextview3Ptr;
-static ZKTextView* mTextview2Ptr;
-static ZKSeekBar* mSeekBar1Ptr;
-static ZKTextView* mTextview1Ptr;
-static ZKCircleBar* mCirclebar1Ptr;
-static ZKTextView* mTextValuePtr;
-static ZKSeekBar* mSeekBar2Ptr;
-static testSliderActivity* mActivityPtr;
+static networkSetting3Activity* mActivityPtr;
 
 /*register activity*/
-REGISTER_ACTIVITY(testSliderActivity);
+REGISTER_ACTIVITY(networkSetting3Activity);
 
 typedef struct {
 	int id; // 定时器ID ， 不能重复
 	int time; // 定时器  时间间隔  单位 毫秒
 }S_ACTIVITY_TIMEER;
 
-#include "logic/testSliderLogic.cc"
+#include "logic/networkSetting3Logic.cc"
 
 /***********/
 typedef struct {
@@ -55,8 +48,9 @@ typedef struct {
 
 /*TAG:ButtonCallbackTab按键映射表*/
 static S_ButtonCallback sButtonCallbackTab[] = {
-    ID_TESTSLIDER_sys_back, onButtonClick_sys_back,
-    ID_TESTSLIDER_Button1, onButtonClick_Button1,
+    ID_NETWORKSETTING3_Button_show_passwd, onButtonClick_Button_show_passwd,
+    ID_NETWORKSETTING3_Button_connect_conn, onButtonClick_Button_connect_conn,
+    ID_NETWORKSETTING3_sys_back, onButtonClick_sys_back,
 };
 /***************/
 
@@ -68,19 +62,8 @@ typedef struct {
 }S_ZKSeekBarCallback;
 /*TAG:SeekBarCallbackTab*/
 static S_ZKSeekBarCallback SZKSeekBarCallbackTab[] = {
-    ID_TESTSLIDER_SeekBar1, onProgressChanged_SeekBar1,
-    ID_TESTSLIDER_SeekBar2, onProgressChanged_SeekBar2,
 };
 
-typedef void (*CircleBarCallback)(ZKCircleBar *pCircleBar, int progress);
-typedef struct {
-    int id;
-    CircleBarCallback callback;
-}S_ZKCircleBarCallback;
-/*TAG:CircleBarCallbackTab*/
-static S_ZKCircleBarCallback SZKCircleBarCallbackTab[] = {
-	ID_TESTSLIDER_Circlebar1, onProgressChanged_CircleBar1,
-};
 
 typedef int (*ListViewGetItemCountCallback)(const ZKListView *pListView);
 typedef void (*ListViewobtainListItemDataCallback)(ZKListView *pListView,ZKListView::ZKListItem *pListItem, int index);
@@ -113,6 +96,7 @@ typedef struct {
 }S_EditTextInputCallback;
 /*TAG:EditTextInputCallback*/
 static S_EditTextInputCallback SEditTextInputCallbackTab[] = {
+    ID_NETWORKSETTING3_EdittextAllInfo, onEditTextChanged_EdittextAllInfo,
 };
 
 typedef void (*VideoViewCallback)(ZKVideoView *pVideoView, int msg);
@@ -127,48 +111,41 @@ static S_VideoViewCallback SVideoViewCallbackTab[] = {
 };
 
 
-testSliderActivity::testSliderActivity() {
+networkSetting3Activity::networkSetting3Activity() {
 	//todo add init code here
 	mVideoLoopIndex = 0;
 	mVideoLoopErrorCount = 0;
 }
 
-testSliderActivity::~testSliderActivity() {
-	//todo add init file here
-    // 退出应用时需要反注册
+networkSetting3Activity::~networkSetting3Activity() {
+  //todo add init file here
+  // 退出应用时需要反注册
     EASYUICONTEXT->unregisterGlobalTouchListener(this);
     onUI_quit();
     unregisterProtocolDataUpdateListener(onProtocolDataUpdate);
 }
 
-const char* testSliderActivity::getAppName() const{
-	return "testSlider.ftu";
+const char* networkSetting3Activity::getAppName() const{
+	return "networkSetting3.ftu";
 }
 
 //TAG:onCreate
-void testSliderActivity::onCreate() {
+void networkSetting3Activity::onCreate() {
 	Activity::onCreate();
-    msys_backPtr = (ZKButton*)findControlByID(ID_TESTSLIDER_sys_back);
-    mButton1Ptr = (ZKButton*)findControlByID(ID_TESTSLIDER_Button1);
-    mTextview8Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview8);
-    mTextview7Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview7);
-    mTextview6Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview6);
-    mTextview5Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview5);
-    mTextview4Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview4);
-    mTextview3Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview3);
-    mTextview2Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview2);
-    mSeekBar1Ptr = (ZKSeekBar*)findControlByID(ID_TESTSLIDER_SeekBar1);if(mSeekBar1Ptr!= NULL){mSeekBar1Ptr->setSeekBarChangeListener(this);}
-    mTextview1Ptr = (ZKTextView*)findControlByID(ID_TESTSLIDER_Textview1);
-    mCirclebar1Ptr = (ZKCircleBar*)findControlByID(ID_TESTSLIDER_Circlebar1);if(mCirclebar1Ptr!=NULL){mCirclebar1Ptr->setCircleBarChangeListener(this);}
-    mTextValuePtr = (ZKTextView*)findControlByID(ID_TESTSLIDER_TextValue);
-    mSeekBar2Ptr = (ZKSeekBar*)findControlByID(ID_TESTSLIDER_SeekBar2);if(mSeekBar2Ptr!= NULL){mSeekBar2Ptr->setSeekBarChangeListener(this);}
+    mButton_show_passwdPtr = (ZKButton*)findControlByID(ID_NETWORKSETTING3_Button_show_passwd);
+    mButton_connect_connPtr = (ZKButton*)findControlByID(ID_NETWORKSETTING3_Button_connect_conn);
+    mTextview_connect_password_titlePtr = (ZKTextView*)findControlByID(ID_NETWORKSETTING3_Textview_connect_password_title);
+    mEdittextAllInfoPtr = (ZKEditText*)findControlByID(ID_NETWORKSETTING3_EdittextAllInfo);if(mEdittextAllInfoPtr!= NULL){mEdittextAllInfoPtr->setTextChangeListener(this);}
+    mTextview_connect_ssid_titlePtr = (ZKTextView*)findControlByID(ID_NETWORKSETTING3_Textview_connect_ssid_title);
+    mTextview_connect_ssidPtr = (ZKTextView*)findControlByID(ID_NETWORKSETTING3_Textview_connect_ssid);
+    msys_backPtr = (ZKButton*)findControlByID(ID_NETWORKSETTING3_sys_back);
 	mActivityPtr = this;
 	onUI_init();
     registerProtocolDataUpdateListener(onProtocolDataUpdate); 
     rigesterActivityTimer();
 }
 
-void testSliderActivity::onClick(ZKBase *pBase) {
+void networkSetting3Activity::onClick(ZKBase *pBase) {
 	//TODO: add widget onClik code 
     int buttonTablen = sizeof(sButtonCallbackTab) / sizeof(S_ButtonCallback);
     for (int i = 0; i < buttonTablen; ++i) {
@@ -192,30 +169,30 @@ void testSliderActivity::onClick(ZKBase *pBase) {
 	Activity::onClick(pBase);
 }
 
-void testSliderActivity::onResume() {
+void networkSetting3Activity::onResume() {
 	Activity::onResume();
 	EASYUICONTEXT->registerGlobalTouchListener(this);
 	startVideoLoopPlayback();
-//	onUI_show();
+	onUI_show();
 }
 
-void testSliderActivity::onPause() {
+void networkSetting3Activity::onPause() {
 	Activity::onPause();
 	EASYUICONTEXT->unregisterGlobalTouchListener(this);
 	stopVideoLoopPlayback();
-//	onUI_hide();
+	onUI_hide();
 }
 
-void testSliderActivity::onIntent(const Intent *intentPtr) {
+void networkSetting3Activity::onIntent(const Intent *intentPtr) {
 	Activity::onIntent(intentPtr);
-//	onUI_intent(intentPtr);
+	onUI_intent(intentPtr);
 }
 
-bool testSliderActivity::onTimer(int id) {
+bool networkSetting3Activity::onTimer(int id) {
 	return onUI_Timer(id);
 }
 
-void testSliderActivity::onProgressChanged(ZKSeekBar *pSeekBar, int progress){
+void networkSetting3Activity::onProgressChanged(ZKSeekBar *pSeekBar, int progress){
 
     int seekBarTablen = sizeof(SZKSeekBarCallbackTab) / sizeof(S_ZKSeekBarCallback);
     for (int i = 0; i < seekBarTablen; ++i) {
@@ -226,18 +203,7 @@ void testSliderActivity::onProgressChanged(ZKSeekBar *pSeekBar, int progress){
     }
 }
 
-void testSliderActivity::onProgressChanged(ZKCircleBar *pCircleBar, int progress){
-
-    int circleBarTablen = sizeof(SZKCircleBarCallbackTab) / sizeof(S_ZKCircleBarCallback);
-    for (int i = 0; i < circleBarTablen; ++i) {
-        if (SZKCircleBarCallbackTab[i].id == pCircleBar->getID()) {
-            SZKCircleBarCallbackTab[i].callback(pCircleBar, progress);
-            break;
-        }
-    }
-}
-
-int testSliderActivity::getListItemCount(const ZKListView *pListView) const{
+int networkSetting3Activity::getListItemCount(const ZKListView *pListView) const{
     int tablen = sizeof(SListViewFunctionsCallbackTab) / sizeof(S_ListViewFunctionsCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SListViewFunctionsCallbackTab[i].id == pListView->getID()) {
@@ -248,7 +214,7 @@ int testSliderActivity::getListItemCount(const ZKListView *pListView) const{
     return 0;
 }
 
-void testSliderActivity::obtainListItemData(ZKListView *pListView,ZKListView::ZKListItem *pListItem, int index){
+void networkSetting3Activity::obtainListItemData(ZKListView *pListView,ZKListView::ZKListItem *pListItem, int index){
     int tablen = sizeof(SListViewFunctionsCallbackTab) / sizeof(S_ListViewFunctionsCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SListViewFunctionsCallbackTab[i].id == pListView->getID()) {
@@ -258,7 +224,7 @@ void testSliderActivity::obtainListItemData(ZKListView *pListView,ZKListView::ZK
     }
 }
 
-void testSliderActivity::onItemClick(ZKListView *pListView, int index, int id){
+void networkSetting3Activity::onItemClick(ZKListView *pListView, int index, int id){
     int tablen = sizeof(SListViewFunctionsCallbackTab) / sizeof(S_ListViewFunctionsCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SListViewFunctionsCallbackTab[i].id == pListView->getID()) {
@@ -268,7 +234,7 @@ void testSliderActivity::onItemClick(ZKListView *pListView, int index, int id){
     }
 }
 
-void testSliderActivity::onSlideItemClick(ZKSlideWindow *pSlideWindow, int index) {
+void networkSetting3Activity::onSlideItemClick(ZKSlideWindow *pSlideWindow, int index) {
     int tablen = sizeof(SSlideWindowItemClickCallbackTab) / sizeof(S_SlideWindowItemClickCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SSlideWindowItemClickCallbackTab[i].id == pSlideWindow->getID()) {
@@ -278,11 +244,11 @@ void testSliderActivity::onSlideItemClick(ZKSlideWindow *pSlideWindow, int index
     }
 }
 
-bool testSliderActivity::onTouchEvent(const MotionEvent &ev) {
-    return ontestSliderActivityTouchEvent(ev);
+bool networkSetting3Activity::onTouchEvent(const MotionEvent &ev) {
+    return onnetworkSetting3ActivityTouchEvent(ev);
 }
 
-void testSliderActivity::onTextChanged(ZKTextView *pTextView, const std::string &text) {
+void networkSetting3Activity::onTextChanged(ZKTextView *pTextView, const std::string &text) {
     int tablen = sizeof(SEditTextInputCallbackTab) / sizeof(S_EditTextInputCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SEditTextInputCallbackTab[i].id == pTextView->getID()) {
@@ -292,7 +258,7 @@ void testSliderActivity::onTextChanged(ZKTextView *pTextView, const std::string 
     }
 }
 
-void testSliderActivity::rigesterActivityTimer() {
+void networkSetting3Activity::rigesterActivityTimer() {
     int tablen = sizeof(REGISTER_ACTIVITY_TIMER_TAB) / sizeof(S_ACTIVITY_TIMEER);
     for (int i = 0; i < tablen; ++i) {
         S_ACTIVITY_TIMEER temp = REGISTER_ACTIVITY_TIMER_TAB[i];
@@ -301,7 +267,7 @@ void testSliderActivity::rigesterActivityTimer() {
 }
 
 
-void testSliderActivity::onVideoPlayerMessage(ZKVideoView *pVideoView, int msg) {
+void networkSetting3Activity::onVideoPlayerMessage(ZKVideoView *pVideoView, int msg) {
     int tablen = sizeof(SVideoViewCallbackTab) / sizeof(S_VideoViewCallback);
     for (int i = 0; i < tablen; ++i) {
         if (SVideoViewCallbackTab[i].id == pVideoView->getID()) {
@@ -316,11 +282,14 @@ void testSliderActivity::onVideoPlayerMessage(ZKVideoView *pVideoView, int msg) 
     }
 }
 
-void testSliderActivity::videoLoopPlayback(ZKVideoView *pVideoView, int msg, int callbackTabIndex) {
+void networkSetting3Activity::videoLoopPlayback(ZKVideoView *pVideoView, int msg, size_t callbackTabIndex) {
 
 	switch (msg) {
 	case ZKVideoView::E_MSGTYPE_VIDEO_PLAY_STARTED:
 		LOGD("ZKVideoView::E_MSGTYPE_VIDEO_PLAY_STARTED\n");
+    if (callbackTabIndex >= (sizeof(SVideoViewCallbackTab)/sizeof(S_VideoViewCallback))) {
+      break;
+    }
 		pVideoView->setVolume(SVideoViewCallbackTab[callbackTabIndex].defaultvolume / 10.0);
 		mVideoLoopErrorCount = 0;
 		break;
@@ -353,7 +322,7 @@ void testSliderActivity::videoLoopPlayback(ZKVideoView *pVideoView, int msg, int
 	}
 }
 
-void testSliderActivity::startVideoLoopPlayback() {
+void networkSetting3Activity::startVideoLoopPlayback() {
     int tablen = sizeof(SVideoViewCallbackTab) / sizeof(S_VideoViewCallback);
     for (int i = 0; i < tablen; ++i) {
     	if (SVideoViewCallbackTab[i].loop) {
@@ -368,7 +337,7 @@ void testSliderActivity::startVideoLoopPlayback() {
     }
 }
 
-void testSliderActivity::stopVideoLoopPlayback() {
+void networkSetting3Activity::stopVideoLoopPlayback() {
     int tablen = sizeof(SVideoViewCallbackTab) / sizeof(S_VideoViewCallback);
     for (int i = 0; i < tablen; ++i) {
     	if (SVideoViewCallbackTab[i].loop) {
@@ -384,7 +353,7 @@ void testSliderActivity::stopVideoLoopPlayback() {
     }
 }
 
-bool testSliderActivity::parseVideoFileList(const char *pFileListPath, std::vector<string>& mediaFileList) {
+bool networkSetting3Activity::parseVideoFileList(const char *pFileListPath, std::vector<string>& mediaFileList) {
 	mediaFileList.clear();
 	if (NULL == pFileListPath || 0 == strlen(pFileListPath)) {
         LOGD("video file list is null!");
@@ -416,7 +385,7 @@ bool testSliderActivity::parseVideoFileList(const char *pFileListPath, std::vect
 	return true;
 }
 
-int testSliderActivity::removeCharFromString(string& nString, char c) {
+int networkSetting3Activity::removeCharFromString(string& nString, char c) {
     string::size_type   pos;
     while(1) {
         pos = nString.find(c);
@@ -429,14 +398,14 @@ int testSliderActivity::removeCharFromString(string& nString, char c) {
     return (int)nString.size();
 }
 
-void testSliderActivity::registerUserTimer(int id, int time) {
+void networkSetting3Activity::registerUserTimer(int id, int time) {
 	registerTimer(id, time);
 }
 
-void testSliderActivity::unregisterUserTimer(int id) {
+void networkSetting3Activity::unregisterUserTimer(int id) {
 	unregisterTimer(id);
 }
 
-void testSliderActivity::resetUserTimer(int id, int time) {
+void networkSetting3Activity::resetUserTimer(int id, int time) {
 	resetTimer(id, time);
 }

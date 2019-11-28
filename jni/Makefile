@@ -26,6 +26,9 @@ LOCAL_HEAD_FILES := $(PROJ_HEAD_FILES)
 PROJ_DIR_TREE := $(dir $(foreach src_path, $(LOCAL_SRC_FILES), $(call rwildcard,$(src_path),*/) ) )  
 PROJ_DIR_TREE := $(sort $(PROJ_DIR_TREE))  
 
+#wlan功能启用开关
+#CONFIG_WLAN_SWITCH := "enable"
+CONFIG_WLAN_SWITCH :=
 OBJS_ROOT_DIR=../obj/
 OBJS_1 = $(patsubst %.cpp,%.o,$(LOCAL_SRC_FILES))
 OBJS_2 = $(patsubst %.c,%.o,$(OBJS_1))
@@ -41,10 +44,22 @@ INCLUDE_DIR := -I$(EASYUI_COMMON_INCLUDE) \
 					-I. \
 					-I$(ZKSW_PREBUILT_INCLUDE_PATH)/mgeff \
 					-I ../jni/sdkdir/include \
+					-I ../jni/voicedetect
 
-LDFLAGS =  -leasyui -pthread -lmi_sys -lmi_disp -lmi_panel -lmi_ao -lmi_gfx -lmi_divp -lmi_vdec -lmi_common -lstdc++ -lmi_ai -lCSpotter -ldl
+LDFLAGS =  -leasyui -pthread -lmi_sys -lmi_disp -lmi_panel -lmi_ao -lmi_gfx -lmi_divp -lmi_vdec -lmi_common -lstdc++ -lmi_ai -lCSpotter -ldl -lrt
 LDFLAGS += -L$(ZKSW_PREBUILT_LIB_PATH)/system -L. -L ../jni/sdkdir/lib
 
+INCLUDE_DIR += -I ../jni/player -I ../jni/player/ffmpeg/include -I ../jni/player/mediastream -I ../jni/player/usbdetect
+INCLUDE_DIR += -I ../jni/v4l2/inc -I ../jni/v4l2/inc/uvc -I ../jni/v4l2/inc/video -I ../jni/v4l2/src -I ../jni/v4l2/src/control -I ../jni/v4l2/src/gcc \
+               -I ../jni/v4l2/src/libv4l -I ../jni/v4l2/src/processing
+
+ifneq ($(CONFIG_WLAN_SWITCH),)
+CFLAGS+=-DSUPPORT_WLAN_MODULE
+CXXFLAGS+=-DSUPPORT_WLAN_MODULE
+
+INCLUDE_DIR += -I ../jni/wifi
+LDFLAGS += -lmi_wlan -lcjson
+endif
 TARGET=../libs/armeabi/libzkgui.so
 
 ifeq ($(TARGET), $(wildcard $(TARGET)))
